@@ -3,7 +3,7 @@ import ActivacionDeLaCuenta from "@/view/auth/activacion_cuenta.vue";
 import Forgot_password from "@/view//auth/forgot_password.vue";
 import homeLayoutUser from "@/layout/user/UserLayout.vue";
 import UserHomeView from "@/view/user/UserHomeView.vue";
-import PublicationView from "@/view/user/PublicationView.vue";
+import PublicationView from "@/view/user/AlertView.vue";
 import DetallePublicationLayoutView from "@/layout/DetallePublicationLayoutView.vue";
 import CatotegorysLayout from "@/layout/user/CatotegorysLayout.vue";
 import FiltrarCatalogoView from "@/view/FiltrarCatalogoView.vue";
@@ -33,15 +33,9 @@ const routes = [
         component: UserHomeView,
       },
       {
-        path: "pub/:id/",
-        name: "pub",
+        path: "alert/:id/",
+        name: "alert",
         component: PublicationView,
-        props: true,
-      },
-      {
-        path: "event_detail/:id/",
-        name: "event",
-        component: EventView,
         props: true,
       },
       {

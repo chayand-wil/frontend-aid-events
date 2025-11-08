@@ -63,14 +63,19 @@
 
             <div class="flex-shrink-0 text-right">
               <div class="text-sm text-gray-400">Ver más</div>
-              <div class="text-2xl text-gray-400 mt-1">▸</div>
+              <div
+                class="text-2xl text-gray-400 mt-1 transform transition-transform duration-200"
+                :class="{ 'rotate-90': expandedId === alert.id }"
+              >
+                ▸
+              </div>
             </div>
           </div>
 
           <transition name="fade">
             <div
-              v-if="expandedIds[alert.id]"
-              class="mt-4 border-t border-white/10 pt-4 text-gray-200"
+              v-if="expandedId === alert.id"
+              class="details mt-4 border-t border-white/10 pt-4 text-gray-200"
             >
               <p class="mb-2">
                 {{ alert.description || "No hay más detalles proporcionados." }}
@@ -85,6 +90,14 @@
                 <div>Categoria: {{ alert.category }}</div>
                 <div>Fuente: {{ alert.source }}</div>
                 <div>Creado: {{ formatDate(alert.createdAt) }} · Actualizado: {{ formatDate(alert.updatedAt) }}</div>
+                <div class="mt-3">
+                  <button
+                    @click.stop="participar(alert)"
+                    class="bg-verdee text-white px-4 py-2 rounded-md hover:brightness-95 transition"
+                  >
+                    Participar
+                  </button>
+                </div>
               </div>
             </div>
           </transition>
@@ -104,9 +117,8 @@ const errorMessage = ref("");
 const alerts = ref([]);
 const loading = ref(false);
 const successMessage = ref("");
-// Map of expanded IDs
-// Map of expanded IDs
-const expandedIds = ref({});
+// Solo un id expandido a la vez
+const expandedId = ref(null);
 
 // Helper: formato de fecha sencillo
 const formatDate = (value) => {
@@ -142,9 +154,19 @@ const statusClass = (status) => {
   return "bg-gray-500 text-white";
 };
 
-// Toggle detalles por id
+// Toggle detalles por id (solo uno abierto a la vez)
 const toggleDetails = (id) => {
-  expandedIds.value[id] = !expandedIds.value[id];
+  expandedId.value = expandedId.value === id ? null : id;
+};
+
+// Enviar objeto a PublicationView: guardamos en sessionStorage y navegamos
+const participar = (alert) => {
+  try {
+    sessionStorage.setItem('selectedAlert', JSON.stringify(alert));
+  } catch (e) {
+    console.warn('No se pudo guardar la alerta en sessionStorage', e);
+  }
+  router.push({ name: 'alert', params: { id: alert.id } });
 };
 
 // GET /alertas
@@ -172,3 +194,31 @@ onMounted(() => {
   getAlertas();
 });
 </script>
+
+<style scoped>
+/* Smooth & quick expand/collapse for details panel (200ms) */
+.details {
+  overflow: hidden;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: max-height 200ms ease, opacity 200ms ease, transform 200ms ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+}
+.fade-enter-to,
+.fade-leave-from {
+  max-height: 800px; /* suficiente para el contenido */
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ensure the arrow rotation is smooth (tailwind classes also help) */
+.rotate-90 {
+  transform: rotate(90deg) !important;
+}
+</style>

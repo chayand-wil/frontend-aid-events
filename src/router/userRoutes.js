@@ -2,7 +2,7 @@ import homeLayoutUser from "@/layout/user/UserLayout.vue";
 import UserHomeView from "@/view/user/UserHomeView.vue";
 import DetallePublicationLayoutView from "@/layout/DetallePublicationLayoutView.vue";
 import DetailPublication from "@/view/user/DetailPublication.vue";
-import PublicationView from "@/view/user/PublicationView.vue";
+import PublicationView from "@/view/user/AlertView.vue";
 
 
 const userRoutes = [
