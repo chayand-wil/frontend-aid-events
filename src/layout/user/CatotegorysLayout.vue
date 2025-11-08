@@ -1,9 +1,9 @@
 <template>
   <div>
-    <SubMenu />
     <div>
       <router-view />
     </div>
+    <SubMenu />
   </div>
   
 </template>

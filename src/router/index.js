@@ -28,22 +28,21 @@ const routes = [
     // meta: { requiresAuth: true, role: 'CLIENT' },
     children: [
       {
-        path: "home",
-        component: CatotegorysLayout,
-        children: [
-          { path: "", name: "articles", component: UserHomeView },
- 
-        ],
+        path: "",
+        name: "articles",
+        component: UserHomeView,
       },
       {
         path: "pub/:id/",
         name: "pub",
-        component: PublicationView, props: true,
+        component: PublicationView,
+        props: true,
       },
       {
         path: "event_detail/:id/",
-        name: "event", component: EventView, props: true,
-  
+        name: "event",
+        component: EventView,
+        props: true,
       },
       {
         path: "search",
@@ -64,7 +63,6 @@ const routes = [
 
   ...adminRoutes,
 
-  
   // nada -  captura de rutas no encontradas
   {
     path: "/:pathMatch(.*)*",
@@ -94,18 +92,18 @@ router.beforeEach((to, from, next) => {
   }
 
   //Si esta autenticado y quiere entrar a rutas publicas
-            // const publicRoutes = [
-            //   "login",
-            //   "register",
-            //   "invited",
-            //   "recover_password",
-            //   "activate",
-            // ];
+  // const publicRoutes = [
+  //   "login",
+  //   "register",
+  //   "invited",
+  //   "recover_password",
+  //   "activate",
+  // ];
 
-            // if (token && publicRoutes.includes(to.name)) {
-            //   if (role === "ADMIN") return next({ name: "admin" });
-            //   if (role === "CLIENT") return next({ name: "user" });
-            // }
+  // if (token && publicRoutes.includes(to.name)) {
+  //   if (role === "ADMIN") return next({ name: "admin" });
+  //   if (role === "CLIENT") return next({ name: "user" });
+  // }
 
   next();
 });
