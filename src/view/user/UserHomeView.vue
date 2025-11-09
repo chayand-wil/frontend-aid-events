@@ -95,7 +95,7 @@
                     @click.stop="participar(alert)"
                     class="bg-verdee text-white px-4 py-2 rounded-md hover:brightness-95 transition"
                   >
-                    Participar
+                    Ver eventos
                   </button>
                 </div>
               </div>
@@ -163,6 +163,7 @@ const toggleDetails = (id) => {
 const participar = (alert) => {
   try {
     sessionStorage.setItem('selectedAlert', JSON.stringify(alert));
+    sessionStorage.setItem('idAlert', alert.id);
   } catch (e) {
     console.warn('No se pudo guardar la alerta en sessionStorage', e);
   }

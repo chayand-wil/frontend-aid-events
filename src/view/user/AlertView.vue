@@ -69,6 +69,7 @@ const route = useRoute();
 const publication = ref(props.publication ?? null);
 const mensaje = ref("");
 const error = ref("");
+const idAlert = ref("");
 
 // Helpers (same as in UserHomeView)
 const formatDate = (value) => {
@@ -95,6 +96,7 @@ onMounted(async () => {
     const raw = sessionStorage.getItem('selectedAlert');
     if (raw) {
       publication.value = JSON.parse(raw);
+      idAlert.value = publication.value.id;
       return;
     }
   } catch (e) {

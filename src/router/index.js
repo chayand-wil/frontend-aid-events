@@ -3,7 +3,7 @@ import ActivacionDeLaCuenta from "@/view/auth/activacion_cuenta.vue";
 import Forgot_password from "@/view//auth/forgot_password.vue";
 import homeLayoutUser from "@/layout/user/UserLayout.vue";
 import UserHomeView from "@/view/user/UserHomeView.vue";
-import PublicationView from "@/view/user/AlertView.vue";
+import AlertView from "@/view/user/AlertView.vue";
 import DetallePublicationLayoutView from "@/layout/DetallePublicationLayoutView.vue";
 import CatotegorysLayout from "@/layout/user/CatotegorysLayout.vue";
 import FiltrarCatalogoView from "@/view/FiltrarCatalogoView.vue";
@@ -13,7 +13,11 @@ import MyArticles from "@/view/user/cart/MyArticles.vue";
 import WishList from "@/view/user/cart/WishList.vue";
 import Cart from "@/view/user/cart/Cart.vue";
 import adminRoutes from "./adminRoutes";
-import EventView from "@/view/user/EventView.vue";
+import EventsViewLayout from "@/layout/EventsViewLayout.vue";
+import EmergenciaView from "@/view/eventos/EmergenciaView.vue";
+import PsicologicaView from "@/view/eventos/PsicologicaView.vue";
+import GeneralVue from "@/view/eventos/GeneralVue.vue";
+import CampaniasView from "@/view/eventos/CampaniasView.vue";
 
 const routes = [
   // {
@@ -34,9 +38,30 @@ const routes = [
       },
       {
         path: "alert/:id/",
-        name: "alert",
-        component: PublicationView,
+        component: EventsViewLayout,
         props: true,
+        children: [
+          {
+            path: "emergencia",
+            name: "alert",
+            component: EmergenciaView,
+          },
+          {
+            path: "campanias",
+            name: "campanias",
+            component: CampaniasView,
+          },
+          {
+            path: "psicologica",
+            name: "psicologica",
+            component: PsicologicaView,
+          },
+          {
+            path: "general",
+            name: "general",
+            component: GeneralVue,
+          },
+        ],
       },
       {
         path: "search",

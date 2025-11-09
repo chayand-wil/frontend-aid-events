@@ -6,22 +6,31 @@
         class="flex space-x-8 px-6 border-b-2 border-indigo-500 w-fit mx-auto text-sm font-semibold text-white"
       >
         <button
-          @click="router.push('/user/home')"
+          @click="router.push('/user/alert/' + currentAlert + '/emergencia')"
           class="pb-2 hover:border-b-2 hover:border-white"
         >
-          Articulos
+          Ayuda de emergencia
+
         </button>
         <button
-          @click="router.push('/user/home/promotions')"
+          @click="router.push('/user/alert/' + currentAlert + '/psicologica')"
           class="pb-2 hover:border-b-2 hover:border-white"
         >
-          Promociones
+          Ayuda psicológica
         </button>
         <button
-          @click="router.push('/user/home/events')"
+          @click="router.push('/user/alert/' + currentAlert + '/general')"
           class="pb-2 hover:border-b-2 hover:border-white"
         >
-          Eventos
+          Ayuda General
+
+        </button>
+        <button
+          @click="router.push('/user/alert/' + currentAlert + '/campanias')"
+          class="pb-2 hover:border-b-2 hover:border-white"
+        >
+          Generación de campañas
+
         </button>
 
         
@@ -35,8 +44,10 @@ import api from '../../axios'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const currentAlert = ref(null)
 
 onMounted(async () => {
+  currentAlert.value = sessionStorage.getItem('idAlert')
   try {
   //   const res = await api.get('/me')
   //   if (res.data.rol.slug !== 'reutilizador') {
