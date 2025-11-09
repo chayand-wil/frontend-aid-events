@@ -6,27 +6,27 @@
         class="flex space-x-8 px-6 border-b-2 border-indigo-500 w-fit mx-auto text-sm font-semibold text-white"
       >
         <button
-          @click="router.push('/user/alert/' + currentAlert + '/emergencia')"
+          @click="redireccionar('emergencia')"
           class="pb-2 hover:border-b-2 hover:border-white"
         >
           Ayuda de emergencia
 
         </button>
         <button
-          @click="router.push('/user/alert/' + currentAlert + '/psicologica')"
+          @click="redireccionar('psicologica')"
           class="pb-2 hover:border-b-2 hover:border-white"
         >
           Ayuda psicológica
         </button>
         <button
-          @click="router.push('/user/alert/' + currentAlert + '/general')"
+          @click="redireccionar('general')"
           class="pb-2 hover:border-b-2 hover:border-white"
         >
           Ayuda General
 
         </button>
         <button
-          @click="router.push('/user/alert/' + currentAlert + '/campanias')"
+          @click="redireccionar('campanias')"
           class="pb-2 hover:border-b-2 hover:border-white"
         >
           Generación de campañas
@@ -42,12 +42,19 @@
 import { ref, onMounted } from 'vue'
 import api from '../../axios'
 import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 const currentAlert = ref(null)
 
+
+const redireccionar = (vista) => {
+  router.push({ name: vista, params: { id: currentAlert.value } });
+}
+
 onMounted(async () => {
-  currentAlert.value = sessionStorage.getItem('idAlert')
+  currentAlert.value = route.params.id
   try {
   //   const res = await api.get('/me')
   //   if (res.data.rol.slug !== 'reutilizador') {

@@ -18,8 +18,6 @@
     </div>
   </div>
 
- 
-
   <!-- UNA PUBLICACION - DETALLE -->
   <div
     class="mt-24 w-full max-w-[900px] mx-auto bg-white/10 backdrop-blur-2xl rounded-2xl p-6 shadow-lg text-white"
@@ -49,29 +47,22 @@
     </template>
   </div>
 </template>
+
 <script setup>
-import { inject } from "vue";
-import { ref } from "vue";
-import { onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { useRouter } from "vue-router";
 import api from "../../axios";
 
-// Props: si viene como tarjeta
 const props = defineProps({
   publication: Object,
-  //   user: Object,
 });
 
-
-const router = useRouter();
-const route = useRoute();
 const publication = ref(props.publication ?? null);
 const mensaje = ref("");
 const error = ref("");
-const idAlert = ref("");
+const route = useRoute();
 
-// Helpers (same as in UserHomeView)
+// Helpers
 const formatDate = (value) => {
   if (!value) return "-";
   try {
@@ -87,39 +78,20 @@ const formatCoordinates = (coords) => {
   return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
 };
 
-// Try to populate publication from props, then sessionStorage, then API by id
+// Si no viene por prop, intentar cargar por id de ruta
 onMounted(async () => {
   if (publication.value) return;
 
-  // Try sessionStorage
-  try {
-    const raw = sessionStorage.getItem('selectedAlert');
-    if (raw) {
-      publication.value = JSON.parse(raw);
-      idAlert.value = publication.value.id;
-      return;
-    }
-  } catch (e) {
-    console.warn('No se pudo leer selectedAlert from sessionStorage', e);
-  }
-
-  // Fallback: fetch by id if route has id param
   const id = route.params.id;
   if (id) {
     try {
-      const resp = await api.get(`/alertas/${id}`);
+      // alertas/findOneAlert?eventId=EQ-20250101-MAIN
+      const resp = await api.get(`/alertas/findOneAlert?eventId=${id}`);
       publication.value = resp.data?.data || resp.data;
     } catch (e) {
-      console.error('Error fetch alert by id', e);
-      error.value = 'No se pudo cargar la publicación';
+      console.error("Error fetch alert by id", e);
+      error.value = "No se pudo cargar la publicación";
     }
   }
 });
- 
-
-
-
-
-
-
 </script>

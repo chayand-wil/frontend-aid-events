@@ -38,12 +38,12 @@ const routes = [
       },
       {
         path: "alert/:id/",
+        name: "alert",
         component: EventsViewLayout,
-        props: true,
         children: [
           {
             path: "emergencia",
-            name: "alert",
+            name: "emergencia",
             component: EmergenciaView,
           },
           {

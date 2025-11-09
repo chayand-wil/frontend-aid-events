@@ -6,6 +6,17 @@
 </div>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+    
+async function algo() {
+    const id = route.params.id;
+}
+
+onMounted(() => {
+    algo();
+});
 
 </script>

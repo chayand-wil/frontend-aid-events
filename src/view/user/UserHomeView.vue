@@ -95,7 +95,7 @@
                     @click.stop="participar(alert)"
                     class="bg-verdee text-white px-4 py-2 rounded-md hover:brightness-95 transition"
                   >
-                    Ver eventos
+                    Participar
                   </button>
                 </div>
               </div>
@@ -159,15 +159,10 @@ const toggleDetails = (id) => {
   expandedId.value = expandedId.value === id ? null : id;
 };
 
-// Enviar objeto a PublicationView: guardamos en sessionStorage y navegamos
+// Enviar objeto a PublicationView como prop via history.state (sin sessionStorage)
 const participar = (alert) => {
-  try {
-    sessionStorage.setItem('selectedAlert', JSON.stringify(alert));
-    sessionStorage.setItem('idAlert', alert.id);
-  } catch (e) {
-    console.warn('No se pudo guardar la alerta en sessionStorage', e);
-  }
-  router.push({ name: 'alert', params: { id: alert.id } });
+  // Asegúrate de que la ruta 'emergencia' esté configurada para recibir props desde history.state
+  router.push({ name: "emergencia", params: { id: alert.eventId }});
 };
 
 // GET /alertas
