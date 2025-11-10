@@ -86,7 +86,7 @@ onMounted(async () => {
   if (id) {
     try {
       // alertas/findOneAlert?eventId=EQ-20250101-MAIN
-      const resp = await api.get(`/alertas/findOneAlert?eventId=${id}`);
+      const resp = await api.get(`/alertas/findOneAlert?alertID=${id}`);
       publication.value = resp.data?.data || resp.data;
     } catch (e) {
       console.error("Error fetch alert by id", e);
