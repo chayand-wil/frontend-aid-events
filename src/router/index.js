@@ -1,17 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
-import ActivacionDeLaCuenta from "@/view/auth/activacion_cuenta.vue";
-import Forgot_password from "@/view//auth/forgot_password.vue";
 import homeLayoutUser from "@/layout/user/UserLayout.vue";
 import UserHomeView from "@/view/user/UserHomeView.vue";
-import AlertView from "@/view/user/AlertView.vue";
-import DetallePublicationLayoutView from "@/layout/DetallePublicationLayoutView.vue";
-import CatotegorysLayout from "@/layout/user/CatotegorysLayout.vue";
-import FiltrarCatalogoView from "@/view/FiltrarCatalogoView.vue";
-import SendCodePassword from "@/view//auth/SendCodePassword.vue";
-import CartLayout from "@/layout/user/CartLayout.vue";
-import MyArticles from "@/view/user/cart/MyArticles.vue";
-import WishList from "@/view/user/cart/WishList.vue";
-import Cart from "@/view/user/cart/Cart.vue";
 import adminRoutes from "./adminRoutes";
 import EventsViewLayout from "@/layout/EventsViewLayout.vue";
 import EmergenciaView from "@/view/eventos/EmergenciaView.vue";
@@ -65,15 +54,7 @@ const routes = [
           },
         ],
       },
-      {
-        path: "cart",
-        component: CartLayout,
-        children: [
-          { path: "", name: "cart", component: Cart },
-          { path: "my_articles", name: "my_articles", component: MyArticles },
-          { path: "wish_list", name: "wish_list", component: WishList },
-        ],
-      },
+ 
     ],
   },
   {
@@ -117,18 +98,16 @@ router.beforeEach((to, from, next) => {
     return next({ name: "login" });
   }
 
-  //Si esta autenticado y quiere entrar a rutas publicas
+  // // Si esta autenticado y quiere entrar a rutas publicas
   // const publicRoutes = [
   //   "login",
   //   "register",
   //   "invited",
-  //   "recover_password",
-  //   "activate",
   // ];
 
   // if (token && publicRoutes.includes(to.name)) {
   //   if (role === "ADMIN") return next({ name: "admin" });
-  //   if (role === "CLIENT") return next({ name: "user" });
+  //   if (role === "COMUN") return next({ name: "user" });
   // }
 
   next();

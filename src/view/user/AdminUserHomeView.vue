@@ -26,7 +26,7 @@
         No hay alertas disponibles
       </div>
 
-      <div class="mt-12 space-y-6">
+      <div class="space-y-6">
         <div
           v-for="alert in alerts"
           :key="alert.id"
@@ -162,7 +162,7 @@ const toggleDetails = (id) => {
 // Enviar objeto a PublicationView como prop via history.state (sin sessionStorage)
 const participar = (alert) => {
   // Asegúrate de que la ruta 'emergencia' esté configurada para recibir props desde history.state
-  router.push({ name: "emergencia", params: { id: alert.eventId }});
+  router.push({ name: "admin_emergencia", params: { id: alert.eventId }});
 };
 
 // GET /alertas
@@ -172,16 +172,12 @@ const getAlertas = async () => {
   try {
     const response = await api.get("/alertas");
     // Asumimos que la API devuelve un array en response.data
-    const all = Array.isArray(response.data)
+    alerts.value = Array.isArray(response.data)
       ? response.data
       : response.data?.data || [];
-
-    // Filtrar para quedarnos solo con estatus 'activo' (insensible a mayúsculas)
-    alerts.value = all.filter(a => (a.status || "").toLowerCase() === "activo");
-
     successMessage.value = alerts.value.length
-      ? "Alertas activas obtenidas con éxito"
-      : "No se encontraron alertas activas";
+      ? "Alertas obtenidas con éxito"
+      : "No se encontraron alertas";
   } catch (error) {
     console.error(error);
     errorMessage.value = "Error al obtener alertas";

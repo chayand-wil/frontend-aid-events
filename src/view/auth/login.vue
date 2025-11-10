@@ -139,9 +139,9 @@ const login = async () => {
 
       switch (role) {
         case 'ADMIN':
-          router.push('/admin/home')
+          router.push('/admin/')
           break
-          case 'CLIENT':
+          case 'COMUN':
             router.push('/user')
           break
           

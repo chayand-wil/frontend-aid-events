@@ -11,9 +11,8 @@
 </template>
 
 <script setup>
-import AppHeader from "../../components/admin/AdminAppHeader.vue";
-// import AppSidebar from '../components/reutilizador/AppSidebar.vue'
-
+import AppHeader from "../../components/cliente/AdminAppHeader.vue";
+ 
 import { provide, ref, onMounted } from "vue";
 import api from "../../axios";
 import { useRouter } from "vue-router";
