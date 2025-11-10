@@ -1,6 +1,6 @@
 import api from '../axios'
 
-const API_URL = '/event'; //
+const API_URL = '/eventos'; //
 /**
  * Obtiene un evento
  */

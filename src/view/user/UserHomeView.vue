@@ -95,7 +95,7 @@
                     @click.stop="participar(alert)"
                     class="bg-verdee text-white px-4 py-2 rounded-md hover:brightness-95 transition"
                   >
-                    Participar
+                    Ver Eventos
                   </button>
                 </div>
               </div>
