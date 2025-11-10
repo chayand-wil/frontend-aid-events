@@ -1,6 +1,5 @@
 <template>
-
-      <!-- Contenedor flotante MENSAJES -->
+  <!-- Contenedor flotante MENSAJES -->
   <div class="fixed top-20 right-40 z-50 space-y-4 w-[300px]">
     <!-- Mensaje de éxito -->
     <div
@@ -20,7 +19,7 @@
   </div>
 
   <div
-    class="mt-24 w-full max-w-[900px] mx-auto bg-white/10 backdrop-blur-2xl rounded-2xl p-6 shadow-lg text-white"
+    class="mt-1 w-full max-w-[900px] mx-auto bg-white/10 backdrop-blur-2xl rounded-2xl p-6 shadow-lg text-white"
   >
     <div class="p-4 max-w-2xl">
       <div class="flex items-center justify-between mb-4">
@@ -80,19 +79,40 @@
 
           <!-- Estado visible y tooltip de más detalles -->
           <div class="flex items-center gap-2 mt-1">
-            <span class="inline-block text-sm font-semibold px-2 py-1 rounded" style="background:#fee2e2; color:#7b1f2f">
+            <span
+              class="inline-block text-sm font-semibold px-2 py-1 rounded"
+              style="background: #fee2e2; color: #7b1f2f"
+            >
               Estado: {{ status }}
             </span>
 
             <!-- icono con tooltip CSS -->
             <div class="relative inline-block group">
-              <button type="button" class="w-6 h-6 flex items-center justify-center rounded-full bg-white/10" aria-label="Más detalles">
+              <button
+                type="button"
+                class="w-6 h-6 flex items-center justify-center rounded-full bg-white/10"
+                aria-label="Más detalles"
+              >
                 <!-- simple SVG info icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
+                  />
                 </svg>
               </button>
-              <div class="absolute left-1/2 -translate-x-1/2 mt-2 w-56 p-2 text-xs text-white bg-gray-800 rounded shadow-lg opacity-0 pointer-events-none transition-opacity duration-150 group-hover:opacity-100" style="z-index:50">
+              <div
+                class="absolute left-1/2 -translate-x-1/2 mt-2 w-56 p-2 text-xs text-white bg-gray-800 rounded shadow-lg opacity-0 pointer-events-none transition-opacity duration-150 group-hover:opacity-100"
+                style="z-index: 50"
+              >
                 El estado se podrá cambiar después de agregar un requerimiento.
               </div>
             </div>
@@ -138,11 +158,47 @@
           </div>
         </form>
       </transition>
-
-      <!-- <div v-if="eventCreated" class="mt-6 p-4 border rounded bg-green-50">
-        <h3 class="font-medium">Evento creado</h3>
-        <pre class="text-sm mt-2">{{ eventCreated }}</pre>
-      </div> -->
+    </div>
+  </div>
+  <div
+    class="mt-4 w-full max-w-[900px] mx-auto bg-white/10 backdrop-blur-2xl rounded-2xl p-6 shadow-lg text-white"
+  >
+    <!-- Lista de eventos relacionados con la alerta -->
+    <div class="mt-8">
+      <h3 class="text-lg font-semibold mb-2">Eventos relacionados</h3>
+      <div v-if="loadingEvents" class="text-sm">Cargando eventos...</div>
+      <div v-else-if="eventsList.length === 0" class="text-sm text-gray-300">
+        No hay eventos para esta alerta.
+      </div>
+      <ul v-else class="space-y-3">
+        <li
+          v-for="ev in eventsList"
+          :key="ev.id || ev._id || ev.title"
+          class="p-3 bg-white/5 rounded"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-medium">
+                {{ ev.title || ev.name || "Sin título" }}
+              </div>
+              <div class="text-xs text-gray-300">
+                {{ ev.description || ev.desc || "" }}
+              </div>
+            </div>
+            <div class="text-right text-xs">
+              <div>
+                Estado:
+                <span class="font-semibold">{{
+                  ev.status || ev.estado || "N/A"
+                }}</span>
+              </div>
+              <div class="text-gray-400">
+                {{ formatDate(ev.startDate) }} → {{ formatDate(ev.endDate) }}
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
@@ -151,7 +207,7 @@
 import { onMounted, ref, computed } from "vue";
 import { useRoute } from "vue-router";
 
-import { createEvents } from "../../services/event";
+import { createEvents, fetchEventsByAlert } from "../../services/event";
 
 // helper to format date for input[type=datetime-local]
 function toLocalDateTimeInput(isoString) {
@@ -166,9 +222,21 @@ function toLocalDateTimeInput(isoString) {
   return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
 }
 
+function formatDate(isoString) {
+  if (!isoString) return "";
+  try {
+    const d = new Date(isoString);
+    return d.toLocaleString();
+  } catch (e) {
+    return isoString;
+  }
+}
+
 const route = useRoute();
 const idAlert = ref(null);
 const eventCreated = ref(null);
+const eventsList = ref([]);
+const loadingEvents = ref(false);
 
 // form state
 const title = ref("");
@@ -178,7 +246,7 @@ const endDateInput = ref("");
 const error = ref("");
 const isSubmitting = ref(false);
 const isOpen = ref(false);
-const status = ref('PLANIFICACION');
+const status = ref("PLANIFICACION");
 const mensaje = ref("");
 
 // minimum start date is now
@@ -187,7 +255,43 @@ const minStartLocal = computed(() =>
 );
 
 async function algo() {
-  idAlert.value = route.params.id;
+  idAlert.value = route.params.idAlert || route.params.id;
+  // cargar eventos relacionados
+  if (idAlert.value) await loadEvents();
+}
+
+async function loadEvents() {
+  loadingEvents.value = true;
+  try {
+    const res = await fetchEventsByAlert(idAlert.value);
+    console.log("Eventos cargados:", res);
+    // Normalizar respuesta: la API puede devolver array directamente, o { data: [...] }, o { data: { data: [...] } }
+    let data = res;
+    if (res && typeof res === "object") {
+      // axios layer sometimes returns { data: ... }
+      if (Array.isArray(res)) {
+        data = res;
+      } else if (Array.isArray(res.data)) {
+        data = res.data;
+      } else if (res.data && Array.isArray(res.data.data)) {
+        data = res.data.data;
+      } else if (Array.isArray(res.data?.data?.data)) {
+        data = res.data.data.data;
+      } else {
+        // fallback: try to find first array inside object
+        const found = Object.values(res).find((v) => Array.isArray(v));
+        if (found) data = found;
+        else data = [];
+      }
+    }
+    eventsList.value = Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error("Error cargando eventos por alerta:", err);
+    error.value =
+      err?.response?.data?.message || "No se pudieron cargar los eventos.";
+  } finally {
+    loadingEvents.value = false;
+  }
 }
 
 function validateDates() {
@@ -230,7 +334,7 @@ async function handleSubmit() {
     const payload = {
       title: title.value,
       description: description.value,
-    //   status: "PLANIFICACION",
+      //   status: "PLANIFICACION",
       status: "ACTIVO",
       startDate: new Date(startDateInput.value).toISOString(),
       endDate: new Date(endDateInput.value).toISOString(),
@@ -242,23 +346,25 @@ async function handleSubmit() {
     // createEvents returns response.data in service — store it in eventCreated
     eventCreated.value = res;
     // show success message using the provided floating container
-    mensaje.value = `Evento creado: ${title.value || 'sin título'}`;
+    mensaje.value = `Evento creado: ${title.value || "sin título"}`;
     // clear any previous error
-    error.value = '';
+    error.value = "";
     // reset form fields
-    title.value = '';
-    description.value = '';
-    startDateInput.value = '';
-    endDateInput.value = '';
+    title.value = "";
+    description.value = "";
+    startDateInput.value = "";
+    endDateInput.value = "";
+    // recargar la lista de eventos tras crear uno nuevo
+    await loadEvents();
     // clear message after 4 seconds
     setTimeout(() => {
-      mensaje.value = '';
+      mensaje.value = "";
     }, 4000);
   } catch (err) {
     console.error("Error creando evento:", err);
     error.value = err?.response?.data?.message || "Error al crear el evento.";
     // clear success message if any
-    mensaje.value = '';
+    mensaje.value = "";
   } finally {
     isSubmitting.value = false;
   }

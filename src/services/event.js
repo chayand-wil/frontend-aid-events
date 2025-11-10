@@ -25,6 +25,22 @@ export const fetchAllEvents = async () => {
 };
 
 /**
+ * Obtiene eventos relacionados a una alerta (catastropheId)
+ * @param {string} catastropheId
+ */
+export const fetchEventsByAlert = async (catastropheId) => {
+  try {
+    // la API expuesta en el proyecto usa /api/eventos/alert/:id en el backend
+    const response = await api.get(`${API_URL}/alert/${catastropheId}`);
+    // intentamos devolver response.data.data si existe, si no devolvemos response.data
+    return response.data.data ?? response.data;
+  } catch (error) {
+    console.error('Error en fetchEventsByAlert:', error);
+    throw error;
+  }
+};
+
+/**
  * Crea un nuevo artista.
  * @param {Object} artistData Los datos del artista a crear.
  * @returns {Promise<Object>} Una promesa que resuelve con el artista creado.
