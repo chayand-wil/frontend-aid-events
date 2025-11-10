@@ -18,6 +18,8 @@ import EmergenciaView from "@/view/eventos/EmergenciaView.vue";
 import PsicologicaView from "@/view/eventos/PsicologicaView.vue";
 import GeneralVue from "@/view/eventos/GeneralVue.vue";
 import CampaniasView from "@/view/eventos/CampaniasView.vue";
+import Login from "@/view/auth/login.vue";
+import Register from "@/view/auth/register.vue";
 
 const routes = [
   // {
@@ -64,11 +66,6 @@ const routes = [
         ],
       },
       {
-        path: "search",
-        name: "search",
-        component: FiltrarCatalogoView,
-      },
-      {
         path: "cart",
         component: CartLayout,
         children: [
@@ -78,6 +75,16 @@ const routes = [
         ],
       },
     ],
+  },
+  {
+    path: "/login",
+    name: "login",
+    component: Login,
+  },
+    {
+    path: "/register",
+    name: "register",
+    component: Register,
   },
 
   ...adminRoutes,

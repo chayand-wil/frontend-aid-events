@@ -23,7 +23,7 @@
   >
     <div class="p-4 max-w-2xl">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold">Crear evento para donaciones</h2>
+        <h2 class="text-xl font-semibold">Voluntariados</h2>
         <button
           type="button"
           @click="isOpen = !isOpen"

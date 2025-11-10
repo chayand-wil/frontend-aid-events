@@ -60,7 +60,7 @@
 
           <div class="relative w-1/2">
             <input
-              v-model="nuevo.lastname"
+              v-model="nuevo.name"
               @focus="focus_lastname = true"
               @blur="focus_lastname = false"
               type="text"
@@ -89,7 +89,7 @@
 
           <div class="relative w-1/2">
             <input
-              v-model="nuevo.username"
+              v-model="nuevo.name"
               @focus="focus_username = true"
               @blur="focus_username = false"
               type="text"

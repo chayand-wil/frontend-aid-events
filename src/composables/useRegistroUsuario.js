@@ -11,6 +11,11 @@ export function useRegistroUsuario() {
   const focus_password = ref(false);
   const focus_username = ref(false);
 
+
+
+
+
+
   const mensaje = ref("");
   const error = ref("");
 
@@ -23,33 +28,35 @@ export function useRegistroUsuario() {
 
   function getDefaultNuevo() {
     return {
-      username: "",
+      // username: "",
       email: "",
       name: "",
-      lastname: "",
-      // password: 'admin123',
+      // lastname: "",
       password: "",
-      // id_rol: 2,
-      // id_estado: 1,
-      // id_genero: 2,
+      type: 0,
+      profession: "Ingeniero",
+      address: "Calle 123",
+      gender: true,
+      politicalPosition: 0,
+      state: true
     };
   }
+
+
 
   const crearUsuario = async () => {
     mensaje.value = "";
     error.value = "";
     try {
-      const response = await api.post("/register", nuevo.value);
+      const response = await api.post("/user", nuevo.value);
       console.log(response.data.message);
       mensaje.value = response?.data?.message || "Usuario creado con éxiiiiito";
       // if (response.status === 201) {
-      const em = nuevo.value.email;
-      router.push({ name: "activate", params: { email: em } });
 
       setTimeout(() => {
         mensaje.value = "";
       }, 5000);
-
+      router.push("/login");
       // Si el usuario es creado con éxito, proceder con el
 
       // registro si no es admin
