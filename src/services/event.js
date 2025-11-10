@@ -63,7 +63,7 @@ export const createEvents = async (artistData) => {
  */
 export const updateEvents = async (id, artistData) => {
   try {
-    const response = await api.put(`${API_URL}/${id}`, artistData);
+    const response = await api.patch(`${API_URL}/${id}`, artistData);
     return response.data;
   } catch (error) {
     console.error('Error en updateArtist:', error);
@@ -83,6 +83,20 @@ export const deleteEvents = async (id) => {
     return response.data;
   } catch (error) {
     console.error('Error en updateArtist:', error);
+    throw error;
+  }
+};
+
+/**
+ * Crea un requerimiento para un evento
+ * @param {Object} requirementData { eventId, requirementKey, requiredValue }
+ */
+export const createRequirement = async (requirementData) => {
+  try {
+    const response = await api.post(`${API_URL}/requirements`, requirementData);
+    return response.data;
+  } catch (error) {
+    console.error('Error en createRequirement:', error);
     throw error;
   }
 };

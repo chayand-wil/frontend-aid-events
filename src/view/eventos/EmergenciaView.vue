@@ -185,7 +185,7 @@
                 {{ ev.description || ev.desc || "" }}
               </div>
             </div>
-            <div class="text-right text-xs">
+            <div class="text-right text-xs flex flex-col items-end gap-2">
               <div>
                 Estado:
                 <span class="font-semibold">{{
@@ -195,10 +195,72 @@
               <div class="text-gray-400">
                 {{ formatDate(ev.startDate) }} → {{ formatDate(ev.endDate) }}
               </div>
+              <div>
+                <button @click="openRequirementModal(ev)" type="button" class="mt-2 text-sm px-2 py-1 bg-white/5 rounded">Editar</button>
+              </div>
             </div>
           </div>
         </li>
       </ul>
+    </div>
+  </div>
+  <!-- Modal para agregar requerimiento -->
+  <div v-if="showReqModal" class="fixed inset-0 z-60 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/50" @click="closeRequirementModal"></div>
+    <div class="relative bg-white text-black rounded-lg p-6 w-full max-w-md z-70">
+      <h3 class="text-lg font-medium mb-4">Agregar requerimiento para: {{ modalEvent?.title || modalEvent?.name || modalEvent?.eventId }}</h3>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-sm font-medium">Tipo de requerimiento</label>
+          <select v-model="requirementType" class="mt-1 block w-full border rounded px-2 py-1">
+            <option value="">Seleccione...</option>
+            <option v-for="t in requirementTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
+          </select>
+        </div>
+
+        <div v-if="requirementType === 'AGE'">
+          <label class="block text-sm font-medium">Edad mínima</label>
+          <input v-model.number="requirementValue" type="number" min="0" class="mt-1 block w-full border rounded px-2 py-1" />
+        </div>
+
+        <div v-if="requirementType === 'GENDER'">
+          <label class="block text-sm font-medium">Género</label>
+          <select v-model="requirementValue" class="mt-1 block w-full border rounded px-2 py-1">
+            <option value="">Seleccione...</option>
+            <option v-for="g in genders" :key="g" :value="g">{{ g }}</option>
+          </select>
+        </div>
+
+        <div v-if="requirementType === 'PROFESSION'">
+          <label class="block text-sm font-medium">Profesión</label>
+          <select v-model="requirementValue" class="mt-1 block w-full border rounded px-2 py-1">
+            <option value="">Seleccione...</option>
+            <option v-for="p in professions" :key="p" :value="p">{{ p }}</option>
+          </select>
+        </div>
+
+        <div v-if="requirementType === 'LOCATION'">
+          <label class="block text-sm font-medium">Dirección</label>
+          <select v-model="requirementValue" class="mt-1 block w-full border rounded px-2 py-1">
+            <option value="">Seleccione...</option>
+            <option v-for="l in locations" :key="l" :value="l">{{ l }}</option>
+          </select>
+        </div>
+
+        <div v-if="requirementType === 'BLOOD_TYPE'">
+          <label class="block text-sm font-medium">Tipo de sangre</label>
+          <select v-model="requirementValue" class="mt-1 block w-full border rounded px-2 py-1">
+            <option value="">Seleccione...</option>
+            <option v-for="b in bloodTypes" :key="b" :value="b">{{ b }}</option>
+          </select>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 mt-4">
+          <button type="button" @click="closeRequirementModal" class="px-3 py-1 rounded border">Cancelar</button>
+          <button type="button" @click="submitRequirement" class="px-3 py-1 bg-blue-600 text-white rounded">+ Agregar requerimiento</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -207,7 +269,7 @@
 import { onMounted, ref, computed } from "vue";
 import { useRoute } from "vue-router";
 
-import { createEvents, fetchEventsByAlert } from "../../services/event";
+import { createEvents, fetchEventsByAlert, createRequirement, updateEvents } from "../../services/event";
 
 // helper to format date for input[type=datetime-local]
 function toLocalDateTimeInput(isoString) {
@@ -237,6 +299,83 @@ const idAlert = ref(null);
 const eventCreated = ref(null);
 const eventsList = ref([]);
 const loadingEvents = ref(false);
+
+// requirement modal state
+const showReqModal = ref(false);
+const modalEvent = ref(null);
+const requirementType = ref("");
+const requirementValue = ref("");
+
+const requirementTypes = [
+  { label: "Edad", value: "AGE" },
+  { label: "Género", value: "GENDER" },
+  { label: "Profesión", value: "PROFESSION" },
+  { label: "Dirección", value: "LOCATION" },
+  { label: "Tipo de sangre", value: "BLOOD_TYPE" },
+];
+
+const genders = ["Masculino", "Femenino"];
+const professions = ["Electricista","Albañil","Enfermero","Doctor","Psicologo","Ingeniero","Desarrollador","Bombero"];
+const locations = ["Guatemala","Mexico"];
+const bloodTypes = ["O+","O-","A+","A-","B+","B-","AB+","AB-"];
+
+function openRequirementModal(ev) {
+  modalEvent.value = ev;
+  requirementType.value = "";
+  requirementValue.value = "";
+  showReqModal.value = true;
+}
+
+function closeRequirementModal() {
+  showReqModal.value = false;
+  modalEvent.value = null;
+}
+
+function requirementKeyFromType(type) {
+  switch (type) {
+    case 'AGE': return 'MIN_AGE';
+    case 'GENDER': return 'GENDER';
+    case 'PROFESSION': return 'PROFESSION';
+    case 'LOCATION': return 'LOCATION';
+    case 'BLOOD_TYPE': return 'BLOOD_TYPE';
+    default: return type;
+  }
+}
+
+async function submitRequirement() {
+  error.value = '';
+  if (!modalEvent.value) return;
+  if (!requirementType.value) { error.value = 'Seleccione un tipo de requerimiento.'; return; }
+  if (!requirementValue.value && requirementValue.value !== 0) { error.value = 'Ingrese el valor del requerimiento.'; return; }
+
+  const payload = {
+    eventId: modalEvent.value.id || modalEvent.value._id || modalEvent.value.eventId || modalEvent.value.idEvent,
+    requirementKey: requirementKeyFromType(requirementType.value),
+    requiredValue: String(requirementValue.value),
+  };
+
+  try {
+    await createRequirement(payload);
+    // si se creó el requerimiento, actualizar el estado del evento a ACTIVO
+    try {
+        alert('iddd: ' + payload.eventId);
+      await updateEvents(payload.eventId, { status: 'ACTIVO' });
+      mensaje.value = 'Requerimiento agregado y evento activado.';
+    } catch (updateErr) {
+      console.error('Error actualizando estado del evento:', updateErr);
+      // aunque falle la actualización del estado, informar que el requerimiento se creó
+      mensaje.value = 'Requerimiento agregado (falló actualizar estado).';
+    }
+    // reset modal
+    closeRequirementModal();
+    // reload events
+    await loadEvents();
+    setTimeout(() => (mensaje.value = ''), 4000);
+  } catch (err) {
+    console.error('Error creando requerimiento:', err);
+    error.value = err?.response?.data?.message || 'Error al agregar el requerimiento.';
+  }
+}
 
 // form state
 const title = ref("");
@@ -334,8 +473,8 @@ async function handleSubmit() {
     const payload = {
       title: title.value,
       description: description.value,
-      //   status: "PLANIFICACION",
-      status: "ACTIVO",
+        status: "PLANIFICACION",
+    //   status: "ACTIVO",
       startDate: new Date(startDateInput.value).toISOString(),
       endDate: new Date(endDateInput.value).toISOString(),
       catastropheId: idAlert.value,
