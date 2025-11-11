@@ -61,3 +61,19 @@ export const deleteUser = async (id) => {
     throw error;
   }
 };
+
+/**
+ * Obtiene un usuario por ID.
+ * @param {number|string} id
+ * @returns {Promise<Object>} Usuario
+ */
+export const fetchUserById = async (id) => {
+  try {
+    const response = await api.get(`user/${id}`);
+    // La API puede devolver { data: { ... } } o directamente el objeto
+    return response.data?.data ?? response.data;
+  } catch (error) {
+    console.error('Error en fetchUserById:', error);
+    throw error;
+  }
+}

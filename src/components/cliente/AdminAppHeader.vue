@@ -147,7 +147,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import UserDropdown from "../../components/UserDropdown.vue";
+import UserDropdown from "../../components/UserDropdownAdmin.vue";
 import Notifications from "../Notifications.vue";
 import InviteModal from "../../components/InviteModal.vue";
 import router from "@/router";

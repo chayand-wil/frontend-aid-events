@@ -4,7 +4,7 @@
     <!-- Mensaje de éxito -->
     <div
       v-if="mensaje"
-      class="bg-white/20 backdrop-blur-sm rounded-2xl p-10 shadow-lg text-xl text-verdee"
+      class="bg-white/20 backdrop-blur-sm rounded-2xl p-4 shadow-lg text-lg text-verdee"
     >
       {{ mensaje }}
     </div>
@@ -12,158 +12,169 @@
     <!-- Mensaje de error de validación -->
     <div
       v-if="error"
-      class="bg-white/10 backdrop-blur-sm rounded-2xl p-10 shadow-lg text-xl text-red-600"
+      class="bg-white/10 backdrop-blur-sm rounded-2xl p-4 shadow-lg text-lg text-red-600"
     >
       {{ error }}
     </div>
   </div>
 
-  <div
-    class="mt-1 w-full max-w-[900px] mx-auto bg-white/10 backdrop-blur-2xl rounded-2xl p-6 shadow-lg text-white"
-  ></div>
-  <div
-    class="mt-4 w-full max-w-[900px] mx-auto bg-white/10 backdrop-blur-2xl rounded-2xl p-6 shadow-lg text-white"
-  >
-</div>
+  <div class="mt-1 w-full max-w-[900px] mx-auto bg-white/10 backdrop-blur-2xl rounded-2xl p-6 shadow-lg text-white">
+    <h1 class="text-2xl font-semibold mb-2">Eventos de emergencia asociados a la alerta</h1>
+    <p class="text-sm text-gray-200 mb-4">Mostrando solo eventos con type: <code>EMERGENCY_AID</code></p>
 
+    <div v-if="loading" class="py-6">Cargando eventos...</div>
 
+    <div v-else>
+      <div v-if="events.length === 0" class="py-6 text-gray-300">No hay eventos de tipo EMERGENCY_AID para esta alerta.</div>
+
+      <ul v-else class="space-y-4">
+        <li v-for="ev in events" :key="ev.id" class="bg-white/5 p-4 rounded-lg border border-white/10">
+          <div class="flex justify-between items-start">
+            <div>
+              <h2 class="text-xl font-medium">{{ ev.title }}</h2>
+              <p class="text-sm text-gray-200">{{ ev.description }}</p>
+              <p class="text-xs text-gray-400 mt-2">Estado: <strong class="text-white">{{ ev.status }}</strong></p>
+              <p class="text-xs text-gray-400">ID evento: {{ ev.id }}</p>
+            </div>
+            <div class="text-right text-sm text-gray-300">
+              <p>Participantes: {{ (ev.participants || []).length }}</p>
+              <p>Requerimientos: {{ (ev.requirements || []).length }}</p>
+            </div>
+          </div>
+          <div class="mt-3 flex justify-end">
+            <button
+              @click.prevent="openEvent(ev)"
+              class="bg-verdee text-white px-3 py-1 rounded hover:opacity-90 text-sm"
+            >
+              Ver evento
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Modal detalle del evento -->
+  <div v-if="showModal" class="fixed inset-0 z-60 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white text-gray-900 rounded-lg shadow-lg w-full max-w-2xl p-6">
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="text-2xl font-semibold">{{ selectedEvent.title }}</h3>
+          <p class="text-sm text-gray-600">ID: {{ selectedEvent.id }} · Estado: {{ selectedEvent.status }}</p>
+        </div>
+        <button @click="closeModal" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+      </div>
+
+      <div class="mt-4 space-y-3 text-sm">
+        <p><strong>Descripción:</strong> {{ selectedEvent.description || '—' }}</p>
+        <p><strong>Tipo:</strong> {{ selectedEvent.type }}</p>
+        <p><strong>Catástrofe:</strong> {{ selectedEvent.catastropheId || '—' }}</p>
+        <p><strong>Fecha inicio:</strong> {{ formatDate(selectedEvent.startDate) }}</p>
+        <p><strong>Fecha fin:</strong> {{ formatDate(selectedEvent.endDate) }}</p>
+
+        <div>
+          <strong>Participantes ({{ (selectedEvent.participants || []).length }}):</strong>
+          <ul class="list-disc list-inside mt-1 text-xs text-gray-700">
+            <li v-for="p in selectedEvent.participants || []" :key="p.id">ID: {{ p.id }} — Rol: {{ p.role }} — Estado: {{ p.status }}</li>
+          </ul>
+        </div>
+
+        <div>
+          <strong>Requerimientos ({{ (selectedEvent.requirements || []).length }}):</strong>
+          <ul class="list-disc list-inside mt-1 text-xs text-gray-700">
+            <li v-for="r in selectedEvent.requirements || []" :key="r.id">{{ r.requirementKey }}: {{ r.requiredValue }}</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button @click="closeModal" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cerrar</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from "vue";
-import { useRoute } from "vue-router";
+import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { fetchEventsByAlert } from '../../services/event'
 
-import { createEvents, fetchEventsByAlert, createRequirement, updateEvents } from "../../services/event";
+const route = useRoute()
+const idAlert = ref(null)
+const events = ref([])
+const mensaje = ref('')
+const error = ref('')
+const loading = ref(false)
 
-// helper to format date for input[type=datetime-local]
-function toLocalDateTimeInput(isoString) {
-  if (!isoString) return "";
-  const d = new Date(isoString);
-  const pad = (n) => String(n).padStart(2, "0");
-  const yyyy = d.getFullYear();
-  const mm = pad(d.getMonth() + 1);
-  const dd = pad(d.getDate());
-  const hh = pad(d.getHours());
-  const min = pad(d.getMinutes());
-  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+// Modal / detalle
+const showModal = ref(false)
+const selectedEvent = ref({})
+
+function openEvent(ev) {
+  selectedEvent.value = ev || {}
+  showModal.value = true
 }
 
-function formatDate(isoString) {
-  if (!isoString) return "";
+function closeModal() {
+  showModal.value = false
+  selectedEvent.value = {}
+}
+
+function formatDate(d) {
+  if (!d) return '—'
+  // If date is an object but empty, return placeholder
+  if (typeof d === 'object' && Object.keys(d).length === 0) return '—'
   try {
-    const d = new Date(isoString);
-    return d.toLocaleString();
+    const dt = new Date(d)
+    if (isNaN(dt.getTime())) return String(d)
+    return dt.toLocaleString()
   } catch (e) {
-    return isoString;
+    return String(d)
   }
 }
 
-const route = useRoute();
-const idAlert = ref(null);
-const eventCreated = ref(null);
-const eventsList = ref([]);
-const loadingEvents = ref(false);
-
-// requirement modal state
-const showReqModal = ref(false);
-const modalEvent = ref(null);
-const requirementType = ref("");
-const requirementValue = ref("");
-
-const requirementTypes = [
-  { label: "Edad", value: "AGE" },
-  { label: "Género", value: "GENDER" },
-  { label: "Profesión", value: "PROFESSION" },
-  { label: "Dirección", value: "LOCATION" },
-  { label: "Tipo de sangre", value: "BLOOD_TYPE" },
-];
-
-const genders = ["Masculino", "Femenino"];
-const professions = ["Electricista","Albañil","Enfermero","Doctor","Psicologo","Ingeniero","Desarrollador","Bombero"];
-const locations = ["Guatemala","Mexico"];
-const bloodTypes = ["O+","O-","A+","A-","B+","B-","AB+","AB-"];
-
-function openRequirementModal(ev) {
-  modalEvent.value = ev;
-  showReqModal.value = true;
-}
-
-function closeRequirementModal() {
-  showReqModal.value = false;
-  modalEvent.value = null;
-}
-
-function requirementKeyFromType(type) {
-  switch (type) {
-    case 'AGE': return 'MIN_AGE';
-    case 'GENDER': return 'GENDER';
-    case 'PROFESSION': return 'PROFESSION';
-    case 'LOCATION': return 'LOCATION';
-    case 'BLOOD_TYPE': return 'BLOOD_TYPE';
-    default: return type;
-  }
-}
-
-async function submitRequirement() {
-  error.value = '';
-  if (!modalEvent.value) return;
-  if (!requirementType.value) { error.value = 'Seleccione un tipo de requerimiento.'; return; }
-  if (!requirementValue.value && requirementValue.value !== 0) { error.value = 'Ingrese el valor del requerimiento.'; return; }
-
-  const payload = {
-    eventId: modalEvent.value.id || modalEvent.value._id || modalEvent.value.eventId || modalEvent.value.idEvent,
-    requirementKey: requirementKeyFromType(requirementType.value),
-    requiredValue: String(requirementValue.value),
-  };
-
+const loadEvents = async () => {
   try {
-    await createRequirement(payload);
-    // si se creó el requerimiento, actualizar el estado del evento a ACTIVO
-    try {
-        alert('iddd: ' + payload.eventId);
-      await updateEvents(payload.eventId, { status: 'ACTIVO' });
-      mensaje.value = 'Requerimiento agregado y evento activado.';
-    } catch (updateErr) {
-      console.error('Error actualizando estado del evento:', updateErr);
-      // aunque falle la actualización del estado, informar que el requerimiento se creó
-      mensaje.value = 'Requerimiento agregado (falló actualizar estado).';
+    loading.value = true
+    error.value = ''
+    mensaje.value = ''
+
+    const catId = idAlert.value
+    if (!catId) {
+      error.value = 'ID de alerta no proporcionado.'
+      events.value = []
+      return
     }
-    // reset modal
-    closeRequirementModal();
-    // reload events
-    await loadEvents();
-    setTimeout(() => (mensaje.value = ''), 4000);
+
+    const data = await fetchEventsByAlert(catId)
+
+    // Normalizar la respuesta: puede venir como array o { items: [...] }
+    let list = []
+    if (Array.isArray(data)) list = data
+    else if (data && Array.isArray(data.items)) list = data.items
+    else if (data && Array.isArray(data.data)) list = data.data
+    else list = []
+
+    // Filtrar solo type === 'EMERGENCY_AID'
+    events.value = list.filter((e) => e && e.type === 'EMERGENCY_AID')
+
+    if (events.value.length === 0) {
+      mensaje.value = 'No se encontraron eventos de tipo EMERGENCY_AID para esta alerta.'
+    }
   } catch (err) {
-    console.error('Error creando requerimiento:', err);
-    error.value = err?.response?.data?.message || 'Error al agregar el requerimiento.';
+    console.error('Error cargando eventos por alerta:', err)
+    error.value = err?.message || 'Error al cargar eventos.'
+  } finally {
+    loading.value = false
   }
 }
 
-// form state
-const title = ref("");
-const description = ref("");
-const startDateInput = ref("");
-const endDateInput = ref("");
-const error = ref("");
-const isSubmitting = ref(false);
-const isOpen = ref(false);
-const status = ref("PLANIFICACION");
-const mensaje = ref("");
-
-// minimum start date is now
-const minStartLocal = computed(() =>
-  toLocalDateTimeInput(new Date().toISOString())
-);
-
-async function algo() {
-  idAlert.value = route.params.idAlert || route.params.id;
-  // cargar eventos relacionados
-  if (idAlert.value) await loadEvents();
+const init = () => {
+  idAlert.value = route.params.idAlert || route.params.id || null
+  if (idAlert.value) loadEvents()
 }
- 
-
 
 onMounted(() => {
-  algo();
-});
+  init()
+})
 </script>

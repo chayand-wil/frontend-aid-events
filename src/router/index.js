@@ -9,6 +9,7 @@ import GeneralVue from "@/view/eventos/GeneralVue.vue";
 import CampaniasView from "@/view/eventos/CampaniasView.vue";
 import Login from "@/view/auth/login.vue";
 import Register from "@/view/auth/register.vue";
+import InforUserView from "@/view/user/inforUserView.vue";
 
 const routes = [
   // {
@@ -54,7 +55,11 @@ const routes = [
           },
         ],
       },
- 
+      {
+        path: "info_user",
+        name: "info_user",
+        component: InforUserView,
+      },
     ],
   },
   {
@@ -62,7 +67,7 @@ const routes = [
     name: "login",
     component: Login,
   },
-    {
+  {
     path: "/register",
     name: "register",
     component: Register,

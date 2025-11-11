@@ -358,7 +358,6 @@ async function submitRequirement() {
     await createRequirement(payload);
     // si se creó el requerimiento, actualizar el estado del evento a ACTIVO
     try {
-        alert('iddd: ' + payload.eventId);
       await updateEvents(payload.eventId, { status: 'ACTIVO' });
       mensaje.value = 'Requerimiento agregado y evento activado.';
     } catch (updateErr) {
