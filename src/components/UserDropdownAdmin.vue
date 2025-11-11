@@ -29,7 +29,7 @@
         <p class="mb-4 text-sm text-gray-300">{{ user.email }}</p>
 
         <button
-          @click="router.push('/admin/info_user')"
+          @click="router.push('/admin/info_admin')"
           class="w-full text-green-400   py-2 rounded-md hover:bg-green-600 hover:text-white transition"
         >
           Mi Cuenta

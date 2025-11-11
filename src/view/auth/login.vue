@@ -136,6 +136,8 @@ const login = async () => {
       localStorage.setItem('id', id)
       localStorage.setItem('name', name)
       localStorage.setItem('email', email)
+      console.log(response.data.message)
+      // alert('id: ' + id + ' role: ' + role)
 
       switch (role) {
         case 'ADMIN':

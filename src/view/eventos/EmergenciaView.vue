@@ -20,7 +20,7 @@
 
   <div class="mt-1 w-full max-w-[900px] mx-auto bg-white/10 backdrop-blur-2xl rounded-2xl p-6 shadow-lg text-white">
     <h1 class="text-2xl font-semibold mb-2">Eventos de emergencia asociados a la alerta</h1>
-    <p class="text-sm text-gray-200 mb-4">Mostrando solo eventos con type: <code>EMERGENCY_AID</code></p>
+    <p class="text-sm text-gray-200 mb-4">Mostrando solo eventos de Voluntariado</p>
 
     <div v-if="loading" class="py-6">Cargando eventos...</div>
 
@@ -87,7 +87,16 @@
         </div>
       </div>
 
-      <div class="mt-6 flex justify-end">
+      <div class="mt-6 flex justify-end space-x-2">
+        <button
+          @click.prevent="participateEvent"
+          :disabled="participateLoading"
+          class="px-4 py-2 bg-verdee text-white rounded hover:opacity-90 disabled:opacity-50"
+        >
+          <span v-if="participateLoading">Registrando...</span>
+          <span v-else>Participar</span>
+        </button>
+
         <button @click="closeModal" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cerrar</button>
       </div>
     </div>
@@ -98,6 +107,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { fetchEventsByAlert } from '../../services/event'
+import { createParticipant } from '../../services/participant'
 
 const route = useRoute()
 const idAlert = ref(null)
@@ -109,6 +119,7 @@ const loading = ref(false)
 // Modal / detalle
 const showModal = ref(false)
 const selectedEvent = ref({})
+const participateLoading = ref(false)
 
 function openEvent(ev) {
   selectedEvent.value = ev || {}
@@ -120,6 +131,71 @@ function closeModal() {
   selectedEvent.value = {}
 }
 
+/**
+ * Registrar participación del usuario actual en el evento seleccionado
+ */
+const participateEvent = async () => {
+  try {
+    error.value = ''
+    mensaje.value = ''
+
+    const userIdRaw = localStorage.getItem('id')
+    if (!userIdRaw) {
+      error.value = 'Usuario no autenticado. Inicia sesión para participar.'
+      return
+    }
+
+    const userId = Number(userIdRaw)
+    if (!userId || !selectedEvent.value?.id) {
+      error.value = 'Datos incompletos para registrar la participación.'
+      return
+    }
+
+    // Evitar registros duplicados (si ya existe un participante con este userId)
+    const existing = (selectedEvent.value.participants || []).some((p) => Number(p.userId) === userId)
+    if (existing) {
+      error.value = 'Ya estás registrado como participante en este evento.'
+      return
+    }
+
+    participateLoading.value = true
+
+    const payload = {
+      userId: userId,
+      eventId: selectedEvent.value.id,
+      role: 'VOLUNTARIO',
+      status: 'PENDIENTE_APROBACION',
+      registeredAt: new Date().toISOString(),
+    }
+    
+    console.log('Payload para crear participante:', payload)
+    alert('aqui vamos')
+    const res = await createParticipant(payload)
+
+    // Dependiendo de la respuesta de la API, puede venir el objeto creado en res.data o res
+    const created = res?.data ?? res
+
+    // Añadir al evento seleccionado para actualizar la vista
+    if (!selectedEvent.value.participants) selectedEvent.value.participants = []
+    selectedEvent.value.participants.push(created)
+
+    // También actualizar el array principal de eventos si corresponde
+    const idx = events.value.findIndex((e) => e.id === selectedEvent.value.id)
+    if (idx !== -1) {
+      if (!events.value[idx].participants) events.value[idx].participants = []
+      events.value[idx].participants.push(created)
+    }
+
+    mensaje.value = 'Te has registrado correctamente como participante. Estado: PENDIENTE_APROBACION.'
+  } catch (err) {
+    console.error('Error registrando participante:', err)
+    // intentar obtener mensaje de error de la API
+    error.value = err?.response?.data?.message || err?.message || 'Error al registrar la participación.'
+  } finally {
+    participateLoading.value = false
+  }
+}
+
 function formatDate(d) {
   if (!d) return '—'
   // If date is an object but empty, return placeholder
@@ -128,7 +204,7 @@ function formatDate(d) {
     const dt = new Date(d)
     if (isNaN(dt.getTime())) return String(d)
     return dt.toLocaleString()
-  } catch (e) {
+  } catch {
     return String(d)
   }
 }

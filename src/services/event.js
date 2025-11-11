@@ -29,7 +29,7 @@ export const fetchAllEvents = async () => {
  * @param {string} catastropheId
  */
 export const fetchEventsByAlert = async (catastropheId) => {
-  try {
+  try {   
     // la API expuesta en el proyecto usa /api/eventos/alert/:id en el backend
     const response = await api.get(`${API_URL}/alert/${catastropheId}`);
     // intentamos devolver response.data.data si existe, si no devolvemos response.data
@@ -97,6 +97,20 @@ export const createRequirement = async (requirementData) => {
     return response.data;
   } catch (error) {
     console.error('Error en createRequirement:', error);
+    throw error;
+  }
+};
+
+/**
+ * Crea un participante para un evento
+ * @param {Object} participantData { userId, eventId, role, status, registeredAt }
+ */
+export const createParticipant = async (participantData) => {
+  try {
+    const response = await api.post(`${API_URL}/participants`, participantData);
+    return response.data;
+  } catch (error) {
+    console.error('Error en createParticipant:', error);
     throw error;
   }
 };

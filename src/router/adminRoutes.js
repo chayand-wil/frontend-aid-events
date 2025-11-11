@@ -6,12 +6,10 @@ import ClienteCampaniasView from "@/view/eventos/AdminCampaniasView.vue";
 import AdminEmergenciaView from "@/view/eventos/adminEmergenciaView.vue";
 import ClienteEmergenciaView from "@/view/eventos/adminEmergenciaView.vue";
 import AdminGeneralVue from "@/view/eventos/AdminGeneralVue.vue";
-import ClienteGeneralVue from "@/view/eventos/AdminGeneralVue.vue";
 import AdminPsicologicaView from "@/view/eventos/AdminPsicologicaView.vue";
 import ClientePsicologicaView from "@/view/eventos/AdminPsicologicaView.vue";
 import AdminUserHomeView from "@/view/user/AdminUserHomeView.vue";
 import InforUserView from "@/view/user/inforUserView.vue";
-import UserHomeView from "@/view/user/UserHomeView.vue";
 //import Article from "@/view/admin/Article.vue";
 
 const adminRoutes = [
@@ -53,8 +51,8 @@ const adminRoutes = [
         ],
       },
       {
-        path: "info_user",
-        name: "info_user",
+        path: "info_admin",
+        name: "info_admin",
         component: InforUserView,
       },
     ],
